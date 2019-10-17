@@ -2,7 +2,7 @@ Como Correrlo ?
 
 1- Para comenzar
 
-POST: \cb3 \expnd0\expndtw0\kerning0 \outl0\strokewidth0 \strokec4 localhost:10001/catchball
+POST: localhost:10001/catchball
 
 {
 "ball": "1"
@@ -15,7 +15,7 @@ localhost:10002/endgame
 localhost:10003/endgame
 localhost:10004/endgame
 
-3- Para A'f1adir un Nuevo Jugador
+3- Para Añadir un Nuevo Jugador
 
 POST: localhost:10003/newplayer
 
