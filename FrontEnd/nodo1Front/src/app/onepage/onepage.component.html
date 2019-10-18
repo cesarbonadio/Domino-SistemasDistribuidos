@@ -30,10 +30,10 @@
     </div>
 
     <div class="leftpane">
-      <div class="overflow-auto p-3 mb-3 mb-md-0 mr-md-3 bg-light" style="max-width: 500px; max-height: 250px;">
+      <div id="scroll" class="overflow-auto p-3 mb-3 mb-md-0 mr-md-3 bg-light" style="max-width: 500px; max-height: 250px;">
           <table>
               <thead>
-                  <th>Index</th>
+                  <th>Jugadas</th>
               </thead>
               <tbody>
                   <tr *ngFor="let ficha of jugadas">
@@ -42,10 +42,14 @@
               </tbody>
           </table>
       </div>
-  
-      <button name="ficha" [disabled]="!papa" type="button" class="btn btn-info" *ngFor="let ficha of propias" (click)="jugarFicha(ficha)">
-          {{ficha}}
+
+      <button name="ficha" [disabled]="!papa" *ngFor="let ficha of propias" (click)="jugarFicha(ficha)" style="padding:0; width:auto; height:auto" >
+        <img src="../../assets/{{ficha}}.png" width="60px" height="120px" style="margin:0; padding:0">
       </button>
+
+      <!-- <button name="ficha" [disabled]="!papa" type="button" class="btn btn-info" *ngFor="let ficha of propias" (click)="jugarFicha(ficha)">
+          {{ficha}}
+      </button> -->
     </div>
 
     <div class="middlepane" style="text-align:center">
