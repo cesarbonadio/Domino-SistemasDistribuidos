@@ -75,11 +75,11 @@ export class OnepageComponent implements OnInit, OnChanges {
 
 
   addRem() {
-    
+
     this.http
     .post("http://localhost:10001/add", this.remoteobj)
     .subscribe((response: any)=>{
-      
+
       this.remoteobj.input1 = response.input1;
       this.remoteobj.input2 = response.input2;
       this.remoteobj.total = response.total;
@@ -158,7 +158,7 @@ export class OnepageComponent implements OnInit, OnChanges {
   barajear(/* PASAR EL NUMERO DE JUGADORES */){
     this.fichas = this.fichas.sort(function() {return Math.random() - 0.5});
     this.fichas = this.split(this.fichas, 3);
-    
+
     for (let i = 1; i<=3; i++){
       this.repartirFichas(this.fichas[i-1],i);
     }
@@ -209,6 +209,10 @@ export class OnepageComponent implements OnInit, OnChanges {
   updateScroll(){
     var element = document.getElementById("scroll");
     element.scrollTop = element.scrollHeight;
+  }
+
+  formatearFicha(ficha){
+    return ficha.replace(":","_");
   }
 
 }
