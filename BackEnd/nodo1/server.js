@@ -11,7 +11,7 @@ const port = process.env.PORT;
 var nextplayer = process.env.NEXT;
 
 //arreglo de puertos
-var portlist = ["192.168.8.100:10001","192.168.8.102:10001","192.168.8.103:10001"];
+var portlist = ["192.168.8.100:10001","192.168.8.102:10001"];
 
 var app = express();
 
@@ -215,7 +215,7 @@ app.post("/matches/:id/distributed", urlencodedParser, (req,res) => {
 app.post("/matches/:id/playpiece", urlencodedParser, (req,res) => {
   var id = req.params.id;
   var elementPos = matches.map(function(x) {return x.id; }).indexOf(parseInt(id));
-  var body = _.pick(req.body, ["turn", "pieces", "piece"]);
+  var body = _.pick(req.body, ["turn", "pieces", "piece", "winner"]);
   var jugador = body.turn - 1;
   
   if(matches[elementPos].turn + 1 > matches[elementPos].players.length){
@@ -226,6 +226,11 @@ app.post("/matches/:id/playpiece", urlencodedParser, (req,res) => {
   if(body.piece != ''){
     matches[elementPos].piecesPlayed.push(body.piece);
     matches[elementPos].players[jugador].pieces = body.pieces;
+  }
+
+  if(body.winner != ''){
+    matches[elementPos].winner = body.winner;
+    matches[elementPos].status = "Finalizado";
   }
 
   for(let i = 0; i < portlist.length; i++){
