@@ -1,0 +1,10 @@
+<form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
+    <label>Coloca un apodo</label>
+        <input 
+        placeholder="Apodo" 
+        type="text"
+        formControlName="userName"/> 
+        <button>
+        Guardar
+        </button>
+</form>

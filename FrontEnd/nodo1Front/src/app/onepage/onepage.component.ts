@@ -1,7 +1,8 @@
-import { Component, OnInit, OnChanges } from "@angular/core";
+import { Component, OnInit, OnChanges, Input } from "@angular/core";
 import { HttpClient} from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { interval, Subscription } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: "app-onepage",
@@ -12,176 +13,184 @@ export class OnepageComponent implements OnInit, OnChanges {
 
   subscription: Subscription;
 
-  localobj = {
-    input1: "0",
-    input2: "0",
-    total: "0"
-  };
-
-  remoteobj = {
-    input1: "0",
-    input2: "0",
-    total: "0"
-  };
-
-  body = {
-    ball: "1"
-  };
-
-  ficha = {
-    valor: "0"
-  };
-
-  fichas = [
-    '0:0','1:0','1:1','2:0','2:1','2:2','3:0',
-    '3:1','3:2','3:3','4:0','4:1','4:2','4:3',
-    '4:4','5:0','5:1','5:2','5:3','5:4','5:5',
-    '6:0','6:1','6:2','6:3','6:4','6:5','6:6'
-  ]
-
-  jugador = {
-    jugador: false
+  propias = {
+    match: 0,
+    turn: 0,
+    pieces: []
   }
 
-  propias = []
+  played = [];
 
-  jugadas = [];
+  userName: String;
+  
+  ip: String;
 
-  papa: Boolean = false;
+  matches: any = [];
 
-  jugador1: Boolean = false;
+  matchSelected : boolean;
 
-  constructor(private http: HttpClient) {
 
+  constructor(private http: HttpClient, private _activedRoute: ActivatedRoute) {
+    this.getUserName();
+    this.matchSelected = false;
+    this.ip = "192.168.8.100:10001"
   }
 
   ngOnInit(){
-    this.obtenerPapa();
-    this.obtenerJugador();
     this.actualizacion();
-
   }
 
-  ngOnChanges(){
-
-  }
+  ngOnChanges(){}
 
   ngDoCheck() {
   }
 
-  add() {
-    let trans = parseInt(this.localobj.input1) + parseInt(this.localobj.input2);
-    this.localobj.total = trans + "";
-  }
-
-  sub() {
-    let trans = parseInt(this.localobj.input1) - parseInt(this.localobj.input2);
-    this.localobj.total = trans + "";
-  }
-
-
-  addRem() {
-
+  /*hacer request para obtener usuario*/
+  getUserName(){
     this.http
-    .post("http://localhost:10001/add", this.remoteobj)
+    .get("http://localhost:10001/username")
     .subscribe((response: any)=>{
-
-      this.remoteobj.input1 = response.input1;
-      this.remoteobj.input2 = response.input2;
-      this.remoteobj.total = response.total;
-
+      console.log(response);
+      this.userName = response.userName;
     });
   }
 
-  subRem() {
+  /*hacer request para crear partida*/
+  createMatch(){
+    console.log("creating match");
     this.http
-    .post("http://localhost:10001/sub", this.remoteobj)
+    .post("http://" + this.ip + "/creatematch", 
+    {
+      players: [ 
+        {
+        userName: this.userName,
+        ip: this.ip,
+        creator: true,
+        pieces: []
+        }
+      ]
+    })
     .subscribe((response: any)=>{
-      this.remoteobj.input1 = response.input1;
-      this.remoteobj.input2 = response.input2;
-      this.remoteobj.total = response.total;
-
+      console.log(response);
     });
   }
 
-  obtenerPapa(){
+  /* Obtiene las partidas */
+  getMatches(){
     this.http
-    .get("http://localhost:10001/papa")
-    .subscribe((response: any) => {
-        console.log(response['papa']);
-        this.papa = response['papa'];
+    .get("http://" + this.ip + "/matches")
+    .subscribe((response: any)=>{
+      console.log(response);
+      this.matches= response['matches']
+      console.log(this.matches)
+    });
+  }
+
+  /* Hace request para unirse a una partida */
+  joinMatch(id){
+    console.log("joinning match");
+    this.http
+    .put("http://" + this.ip + "/matches/"+id,{
+      player: 
+        {
+        userName: this.userName,
+        ip: this.ip,
+        creator: false,
+        pieces: []
+        }
     })
-  }
-
-  obtenerPapa2(){
-    <Promise<any>>this.http.get("http://localhost:10001/papa").toPromise()
-    .then((response: any) => {
-      console.log(response['papa']);
-      this.papa = response['papa'];
-    })
-  }
-
-  obtenerJugador(){
-    this.http.get("http://localhost:10001/jugador")
-    .subscribe((response: any) => {
-      console.log(response['jugador']);
-      this.jugador1 = response['jugador'];
-  })
-  }
-
-  obtenerJugada(){
-    this.http
-    .get("http://localhost:10001/jugadas")
-    .subscribe((response: any) => {
-        console.log(response['fichasJ']);
-        this.jugadas = response['fichasJ'];
-    })
-  }
-
-  obtenerJugada2(){
-    <Promise<any>>this.http
-    .get("http://localhost:10001/jugadas").toPromise()
-    .then((response: any) => {
-        console.log(response['fichasJ']);
-        this.jugadas = response['fichasJ'];
-    })
-  }
-
-  startGame(){
-    this.http
-    .post("http://localhost:10001/catchball" ,this.body )
-    .subscribe((response: any) => {
-      this.body.ball = "1"
+    .subscribe((response: any)=>{
+      console.log(response);
+      this.matches= response['matches']
+      console.log(this.matches)
     });
 
-    this.http
-    .post("http://localhost:10001/jugador" ,this.jugador )
-    .subscribe((response: any) => {
-      this.jugador.jugador = false
-      console.log(this.jugador.jugador);
-    });
-
-    this.jugador1 = false
-
-    this.barajear();
-
   }
 
-  pasarPapa() {
+  /* Valida si eres jugador 1 */
+  getip(match){
+    let jugador = match.players.filter(item => item != item.ip)
+    console.log(jugador)
+    if(jugador[0].ip == this.ip){
+      return true;
+    }
+    return false;
+  }
+
+  /* Barajea las fichas y las reparte  */
+  distribute(id){
+    this.http
+    .post("http://" + this.ip + "/matches/"+id+"/distribute", {})
+    .subscribe((response: any)=>{
+      console.log(response);
+    });
+  }
+
+  /*Verificar si se tiene el turno actual de la partida*/ 
+  getTurn(match){
+    if (match.turn == match.players.map(function(e) { return e.ip; }).indexOf(this.ip)+1){
+      return true;
+    }
+    return false;
+  }
+
+  getPiecesByMatch(match){
+    var jugador = match.turn - 1;
+    this.propias = {
+      match: match.id,
+      turn: match.turn,
+      pieces: match.players[jugador].pieces
+    } 
+    this.getPiecesPlayed(match);
+  }
+
+  async playPiece(matchId, turn, piece){
+    this.matchSelected = true;
+    console.log("match", matchId);
+    console.log("turn", turn);
+    console.log("piece",piece)
+    let pieces = this.propias.pieces.filter(item => item != piece);
 
     this.http
-    .post("http://localhost:10002/catchball" ,this.body )
-    .subscribe((response: any) => {
-      this.body.ball = "1"
-    });
+      .post("http://" + this.ip + "/matches/"+matchId+"/playpiece", {
+        turn: turn,
+        pieces: pieces,
+        piece: piece
+      }).subscribe((response: any)=>{
+        console.log(response);
+      });
+
+    this.propias.pieces = [];
+    this.played.push(piece);
+  }
+
+  getPiecesPlayed(match){
+    this.played = match.piecesPlayed;
+  }
+  
+  skipPlay(match){
+    this.matchSelected = true;
+    let pieces = this.propias.pieces;
 
     this.http
-    .post("http://localhost:10001/pasar" ,this.body )
-    .subscribe((response: any) => {
-      this.body.ball = "1"
-    });
+      .post("http://" + this.ip + "/matches/"+match.id+"/playpiece", {
+        turn: match.turn,
+        pieces: pieces,
+        piece: ''
+      }).subscribe((response: any)=>{
+        console.log(response);
+      });
 
-    this.papa = false;
+    this.propias.pieces = [];
+  }
+
+  getCreater(match){
+    let player = match.players.filter(item => item.ip == this.ip)
+    if (player.length == 0){
+      return true;
+    }else{
+      return false
+    }
   }
 
   async jugarFicha(valor: string): Promise<any>{
@@ -199,62 +208,23 @@ export class OnepageComponent implements OnInit, OnChanges {
       .post("http://localhost:10003/jugar", {valor: valor})
       .toPromise();
 
-    this.propias = this.propias.filter(item => item != valor);
-    this.repartirFichas(this.propias,1);
-
     return this.jugadaExitosa();
 
   }
 
-  barajear(/* PASAR EL NUMERO DE JUGADORES */){
-    this.fichas = this.fichas.sort(function() {return Math.random() - 0.5});
-    this.fichas = this.split(this.fichas, 3);
-
-    for (let i = 1; i<=3; i++){
-      this.repartirFichas(this.fichas[i-1],i);
-    }
-  }
-
-  split(arr, n) {
-    var res = [];
-    var m = arr.length/n;
-    while (arr.length) {
-      res.push(arr.splice(0, m));
-    }
-    return res;
-  }
-
-  async repartirFichas(arr,n){
-    let res = await this.http
-      .post("http://localhost:1000"+n+"/repartir", {fichas: arr})
-      .toPromise();
-  }
-
-  obtenerFichas(){
-    <Promise<any>>this.http
-    .get("http://localhost:10001/fichasP").toPromise()
-    .then((response: any) => {
-        console.log("llegue");
-        console.log(response['fichasP']);
-        this.propias = response['fichasP'];
-    })
-  }
-
+  // Funcion para actualizar cada 2500
   actualizacion(){
     const source = interval(2500);
     this.subscription = source.subscribe(val => this.actualizar());
   }
 
+  // Funcion para la actualizacion real
   actualizar(){
-    this.obtenerJugada();
-    this.obtenerPapa();
-    this.obtenerFichas();
     this.updateScroll();
+    this.getMatches();
   }
 
   jugadaExitosa(){
-    this.pasarPapa();
-    this.obtenerJugada();
   }
 
   updateScroll(){
