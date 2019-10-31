@@ -150,12 +150,21 @@ export class OnepageComponent implements OnInit, OnChanges {
     console.log("turn", turn);
     console.log("piece",piece)
     let pieces = this.propias.pieces.filter(item => item != piece);
+    console.log("LLEGUEEEEEEE",pieces)
+    let winner: String;
+
+    if(pieces.length == 0){
+      winner = this.userName;
+    }else{
+      winner = '';
+    }
 
     this.http
       .post("http://" + this.ip + "/matches/"+matchId+"/playpiece", {
         turn: turn,
         pieces: pieces,
-        piece: piece
+        piece: piece,
+        winner: winner
       }).subscribe((response: any)=>{
         console.log(response);
       });
@@ -176,7 +185,8 @@ export class OnepageComponent implements OnInit, OnChanges {
       .post("http://" + this.ip + "/matches/"+match.id+"/playpiece", {
         turn: match.turn,
         pieces: pieces,
-        piece: ''
+        piece: '',
+        winner: ''
       }).subscribe((response: any)=>{
         console.log(response);
       });
