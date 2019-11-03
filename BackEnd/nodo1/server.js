@@ -11,7 +11,7 @@ const port = process.env.PORT;
 var nextplayer = process.env.NEXT;
 
 //arreglo de puertos
-var portlist = ["192.168.8.100:10001","192.168.8.102:10001"];
+var portlist = ["192.168.1.147:10001","192.168.1.110:10001"];
 
 var app = express();
 

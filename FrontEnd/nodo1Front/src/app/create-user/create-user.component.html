@@ -1,10 +1,18 @@
+
 <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
-    <label>Coloca un apodo</label>
+    <h1 style="text-align: center;">Domino's</h1>
+    <div class="question">
+        <input formControlName="userName" type="text" required/>
+        <label>Apodo</label>
+    </div>
+
+  <!--   <label style="font-family:Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif; font-size:40px; font-style:italic; " >Coloca un apodo:</label><br>
         <input 
+        style="margin-left: 10px; border-radius: 10px;"
         placeholder="Apodo" 
         type="text"
-        formControlName="userName"/> 
+        formControlName="userName"/>  -->
         <button>
-        Guardar
+        Continuar
         </button>
 </form>

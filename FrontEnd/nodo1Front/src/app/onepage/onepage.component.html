@@ -1,92 +1,94 @@
-<div class="container">
+<html>
+  <div class="container">
 
-    <div class="toppane">
-      <h1 style="text-align:center">Domino</h1>
-      <p>Bienvenido: {{ userName }}</p>  
-    </div>
-
-    <div class="leftpane">
-      <div id="scroll" class="overflow-auto p-3 mb-3 mb-md-0 mr-md-3 bg-light" style="max-width: 500px; max-height: 250px;">
-          <table>
-              <thead>
-                  <th>Jugadas</th>
-              </thead>
-              <tbody>
-                  <tr *ngFor="let ficha of played">
-                      <td>{{ficha}}</td>
-                  </tr>
-              </tbody>
-          </table>
+      <div class="toppane">
+        <h1 style="font-family:Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif; font-size:60px; text-align:center;">Domino's</h1><br>
+        <p style="font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif; font-size:20px; font-style:italic;" >Bienvenido: {{ userName }}</p>  
       </div>
 
-      <button name="ficha" *ngFor="let ficha of propias.pieces" (click)="playPiece(propias.match,propias.turn,ficha)" style="padding:0; width:auto; height:auto" >
-        <img src="../../assets/{{formatearFicha(ficha)}}.png" width="60px" height="120px" style="margin:0; padding:0">
-      </button>
+      <div class="leftpane" >
+        <div id="scroll" class="overflow-auto p-3 mb-3 mb-md-0 mr-md-3 bg-light" style="max-width: 500px; max-height: 300px; border-collapse: collapse; border-radius: 1em; overflow: hidden;">
+            <table>
+                <thead>
+                    <th style="font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif; font-size:20px; font-style:italic; text-align:center">Jugadas</th>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let ficha of played">
+                        <td style="font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif; font-size:20px; font-style:italic; text-align:center" >{{ficha}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-      <br>
-      <h6 *ngIf="propias.pieces.length == 0 && matchSelected">No Es Tu Turno En Esta Partida :(</h6>
+        <button name="ficha" *ngFor="let ficha of propias.pieces" (click)="playPiece(propias.match,propias.turn,ficha)" style="padding:0; width:auto; height:auto" >
+          <img src="../../assets/{{formatearFicha(ficha)}}.png" width="60px" height="120px" style="margin:0; padding:0">
+        </button>
+
+        <br>
+        <h6 *ngIf="propias.pieces.length == 0 && matchSelected" style="font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif; font-size:20px; font-style:italic;">No Es Tu Turno En Esta Partida :(</h6>
+
+      </div>
+
+    <!--   <div class="middlepane" style="text-align:center">
+      </div> -->
+
+      <div class="rightpane">
+
+        <!--tabla de las partidas-->
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Partida</th>
+              <th scope="col">T. Jugador</th>
+              <th scope="col">Estatus</th>
+              <th scope="col">Ganador</th>
+              <th scope="col">Accion</th>
+            </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor = "let match of matches">
+                  <th scope="row">{{match.matchName}}</th>
+                  <td>{{match.turn}}</td>
+                  <td>{{match.status}}</td>
+                  <td>{{match.winner}}</td>
+                  <td>
+                    <button 
+                      type="button" 
+                      class="btn btn-info" 
+                      (click)="joinMatch(match.id)"
+                      *ngIf="match.status == 'En Espera' && getCreater(match)">
+                      Unirse
+                    </button>
+                    <button 
+                      type="button" 
+                      class="btn btn-success" 
+                      (click)="distribute(match.id)"
+                      *ngIf="match.status == 'Listos' && getip(match)">
+                      Comenzar
+                    </button>
+                    <button 
+                      type="button" 
+                      class="btn btn-danger"
+                      (click)="skipPlay(match)" 
+                      *ngIf="getTurn(match) && match.status == 'Jugando'">
+                      Pasar
+                    </button>
+                    <button 
+                      type="button" 
+                      class="btn btn-success"
+                      (click)="getPiecesByMatch(match)" 
+                      *ngIf="getTurn(match) && match.status == 'Jugando'">
+                      Jugar
+                    </button>
+                  </td> 
+                </tr>
+              </tbody>
+        </table>
+
+      <!--botones de crear y unirse a partida-->
+      <button type="button" class="btn btn-primary" (click)="createMatch()">Crear partida</button>
 
     </div>
 
-  <!--   <div class="middlepane" style="text-align:center">
-    </div> -->
-
-    <div class="rightpane">
-
-      <!--tabla de las partidas-->
-      <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Partida</th>
-            <th scope="col">T. Jugador</th>
-            <th scope="col">Estatus</th>
-            <th scope="col">Ganador</th>
-            <th scope="col">Accion</th>
-          </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor = "let match of matches">
-                <th scope="row">{{match.matchName}}</th>
-                <td>{{match.turn}}</td>
-                <td>{{match.status}}</td>
-                <td>{{match.winner}}</td>
-                <td>
-                  <button 
-                    type="button" 
-                    class="btn btn-info" 
-                    (click)="joinMatch(match.id)"
-                    *ngIf="match.status == 'En Espera' && getCreater(match)">
-                    Unirse
-                  </button>
-                  <button 
-                    type="button" 
-                    class="btn btn-success" 
-                    (click)="distribute(match.id)"
-                    *ngIf="match.status == 'Listos' && getip(match)">
-                    Comenzar
-                  </button>
-                  <button 
-                    type="button" 
-                    class="btn btn-danger"
-                    (click)="skipPlay(match)" 
-                    *ngIf="getTurn(match) && match.status == 'Jugando'">
-                    Pasar
-                  </button>
-                  <button 
-                    type="button" 
-                    class="btn btn-success"
-                    (click)="getPiecesByMatch(match)" 
-                    *ngIf="getTurn(match) && match.status == 'Jugando'">
-                    Jugar
-                  </button>
-                </td> 
-              </tr>
-            </tbody>
-      </table>
-
-    <!--botones de crear y unirse a partida-->
-    <button type="button" class="btn btn-primary" (click)="createMatch()">Crear partida</button>
-
   </div>
-
-</div>
+</html>

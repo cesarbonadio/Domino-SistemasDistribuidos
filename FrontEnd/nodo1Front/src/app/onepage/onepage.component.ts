@@ -33,7 +33,7 @@ export class OnepageComponent implements OnInit, OnChanges {
   constructor(private http: HttpClient, private _activedRoute: ActivatedRoute) {
     this.getUserName();
     this.matchSelected = false;
-    this.ip = "192.168.8.100:10001"
+    this.ip = "192.168.1.147:10001"
   }
 
   ngOnInit(){
@@ -46,8 +46,8 @@ export class OnepageComponent implements OnInit, OnChanges {
   }
 
   /*hacer request para obtener usuario*/
-  getUserName(){
-    this.http
+  async getUserName(){
+    await this.http
     .get("http://localhost:10001/username")
     .subscribe((response: any)=>{
       console.log(response);
