@@ -2,7 +2,7 @@ import { Component, OnInit, OnChanges, Input } from "@angular/core";
 import { HttpClient} from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { interval, Subscription } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: "app-onepage",
@@ -30,10 +30,10 @@ export class OnepageComponent implements OnInit, OnChanges {
   matchSelected : boolean;
 
 
-  constructor(private http: HttpClient, private _activedRoute: ActivatedRoute) {
+  constructor(private http: HttpClient, private _activedRoute: ActivatedRoute, private _router: Router) {
     this.getUserName();
     this.matchSelected = false;
-    this.ip = "192.168.1.147:10001"
+    this.ip = "localhost:10001"
   }
 
   ngOnInit(){
@@ -46,13 +46,23 @@ export class OnepageComponent implements OnInit, OnChanges {
   }
 
   /*hacer request para obtener usuario*/
-  async getUserName(){
-    await this.http
+  getUserName(){
+    this.http
     .get("http://localhost:10001/username")
     .subscribe((response: any)=>{
       console.log(response);
       this.userName = response.userName;
+      console.log(this.userName)
+      this.changePage();
     });
+    
+  }
+
+  changePage(){
+    if(this.userName == ""){
+      console.log("llegueeeee")
+      this._router.navigate(["/nickname"]);
+    }
   }
 
   /*hacer request para crear partida*/

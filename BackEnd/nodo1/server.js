@@ -5,13 +5,16 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const _ = require("lodash");
+var fs = require('fs');
+var json_matches = JSON.parse(fs.readFileSync('recover.json'));
+var json_user = JSON.parse(fs.readFileSync('user.json'));
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
 const port = process.env.PORT;
 
 var nextplayer = process.env.NEXT;
 
 //arreglo de puertos
-var portlist = ["192.168.1.147:10001","192.168.1.110:10001"];
+var portlist = ["localhost:10001","localhost:10002","localhost:10003"];
 
 var app = express();
 
@@ -33,9 +36,19 @@ var fichasPropias = []
 
 var jugador = 1;
 
+var currentMatch = {
+  id: 0,
+  matchName: '',
+  turn: 0,
+  players: [],
+  status: '',
+  winner: '',
+  piecesPlayed: []
+}
+
 
 //nombre de usuario de cada jugador
-var userName = '';
+
 
 //partidas
 var matches = [];
@@ -48,11 +61,32 @@ pieces = [
   '6:0','6:1','6:2','6:3','6:4','6:5','6:6'
 ]
 
+try {
+  if(fs.existsSync('recover.json')){
+    matches =  json_matches.matches;
+    var userName = json_user.user;
+  }else{
+    console.log('errorrr');
+  } 
+}catch (error) {
+  console.log(error)
+}
+
+
+
 
 //post para nombre de usuario
 app.post("/username", urlencodedParser, (req,res) => {
   let body = _.pick(req.body, ["userName"]);
   userName = body.userName;
+  json_user.user = userName;
+  var stringify = JSON.stringify(json_user);
+  fs.writeFile('user.json', stringify, function (err) {
+      if (err) {
+          console.log("Ocurrio un error guardando el usuario en archivo en el JSON");
+      }
+      console.log("El usuario fue guardado exitosamente.");
+  })
   console.log(userName);
   res.json({ status: "success", message: "Se Creo el usuario" });
 });
@@ -98,9 +132,17 @@ app.post("/creatematch", urlencodedParser, (req,res) => {
 //post para registrar partidas creadas
 app.post("/newmatch", urlencodedParser, (req,res) => {
   let body = req.body;
-  matches.push(body);
+  json_matches.matches.push(body);
+  var stringify = JSON.stringify(json_matches);
+  fs.writeFile('recover.json', stringify, function (err) {
+      if (err) {
+          console.log("Ocurrio un error guardando el historial en archivo en el JSON");
+      }
+      console.log("El historial fue guardado exitosamente.");
+  })
+  // matches.push(body);
   console.log(body);
-  console.log(matches);
+  console.log(json_matches.matches);
   res.json({ status: "success", message: "Se registro la partida" });
 });
 
@@ -113,12 +155,14 @@ app.get("/matches", urlencodedParser, (req, res) => {
 app.put("/matches/:id", urlencodedParser, (req,res) => {
   var id = req.params.id;
   var ids = [parseInt(id)];
-  var match = matches.filter(function(el){ return ~ids.indexOf(el.id)});
+  var match = _.filter(json_matches.matches, function (match) {
+    return match.id === id;
+  })[0];
   //var match = matches.filter(x => x.id === id);
   let body = _.pick(req.body, ["player"]);
 
-  match[0].status = "Listos";
-  match[0].players.push(body.player)
+  match.status = "Listos";
+  match.players.push(body.player)
 
   for(let i = 0; i < portlist.length; i++){
     let options = {
@@ -143,12 +187,28 @@ app.put("/matches/:id", urlencodedParser, (req,res) => {
 
 //post para unirse a una partida
 app.post("/matches/:id/join", urlencodedParser, (req,res) => {
+  let body = req.body;
   var id = req.params.id;
   var ids = [parseInt(id)];
-  var elementPos = matches.map(function(x) {return x.id; }).indexOf(parseInt(id));
-  let body = req.body;
-  matches[elementPos] = body[0]
-  console.log(matches);
+  json_matches.matches = _.filter(json_matches.matches, function (match) {
+    return match.id != id;
+  });
+  console.log("partidas",json_matches)
+
+  json_matches.matches.push(body[0])
+
+  var stringify = JSON.stringify(json_matches);
+  fs.writeFile('recover.json', stringify, function (err) {
+    if (err) {
+        console.log("Ocurrio un error actualizando el historial en archivo en el JSON");
+    }
+    console.log("El historial fue actualizado exitosamente.");
+  })
+
+  matches = json_matches.matches;
+  /* var elementPos = matches.map(function(x) {return x.id; }).indexOf(parseInt(id)); */
+  
+  console.log(json);
   res.json({ status: "success", message: "Se unio a la partida" });
 });
 
@@ -159,6 +219,8 @@ app.post("/matches/:id/distribute", urlencodedParser, (req,res) => {
   var id = req.params.id;
   var ids = [parseInt(id)];
   var match = matches.filter(function(el){ return ~ids.indexOf(el.id)});
+  console.log(match);
+  
 
   var playersLength = match[0].players.length;
   let piecesCopy = pieces.slice(0);;
@@ -195,9 +257,42 @@ app.post("/matches/:id/distribute", urlencodedParser, (req,res) => {
 
 //post para recibir las fichas 
 app.post("/matches/:id/distributed", urlencodedParser, (req,res) => {
+  let body = req.body;
   var id = req.params.id;
   var ids = [parseInt(id)];
-  var elementPos = matches.map(function(x) {return x.id; }).indexOf(parseInt(id));
+
+  console.log(id)
+
+  currentMatch = _.filter(json_matches.matches, function (match) {
+    return match.id == id;
+  })[0];
+
+  json_matches.matches = _.filter(json_matches.matches, function (match) {
+    return match.id != id;
+  });
+
+  console.log("llegue",currentMatch);
+
+  currentMatch.status = "Jugando";
+  currentMatch.turn = 1;
+  for(let i=0; i< body.length; i++){
+    currentMatch.players[i].pieces = body[i];
+  }
+
+  console.log("partidas",json_matches.matches)
+
+  json_matches.matches.push(currentMatch)
+
+  var stringify = JSON.stringify(json_matches);
+  fs.writeFile('recover.json', stringify, function (err) {
+    if (err) {
+        console.log("Ocurrio un error actualizando el historial en archivo en el JSON");
+    }
+    console.log("El historial fue actualizado exitosamente.");
+  })
+  matches = json_matches.matches;
+
+  /* var elementPos = matches.map(function(x) {return x.id; }).indexOf(parseInt(id));
   let body = req.body;
   console.log(body);
 
@@ -206,7 +301,7 @@ app.post("/matches/:id/distributed", urlencodedParser, (req,res) => {
 
   for(let i=0; i< body.length; i++){
     matches[elementPos].players[i].pieces = body[i];
-  }
+  } */
   console.log(matches);
   res.json({ status: "success", message: "Se recibieron las fichas a la partida" });
 });
@@ -259,6 +354,18 @@ app.post("/matches/playedpiece", urlencodedParser, (req,res) => {
   let body = req.body;
 
   matches = body
+
+  json_matches.matches = matches;
+
+  var stringify = JSON.stringify(json_matches);
+  fs.writeFile('recover.json', stringify, function (err) {
+    if (err) {
+        console.log("Ocurrio un error actualizando el historial en archivo en el JSON");
+    }
+    console.log("El historial fue actualizado exitosamente.");
+  })
+  matches = json_matches.matches;
+
 
   res.json({ status: "success", message: "Se recibieron las fichas jugadas en la partida" });
 });

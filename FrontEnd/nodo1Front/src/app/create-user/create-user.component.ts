@@ -36,19 +36,20 @@ export class CreateUserComponent implements OnInit {
 
   public onSubmit():void{
     this.createUserName();
-    this._router.navigate(['/juego']);
   }
 
   
-  public createUserName():void {
-    this._http
+  async createUserName() {
+    await this._http
     .post("http://localhost:10001/username", 
     {
       userName: this.registrationForm.get('userName').value
     })
     .subscribe((response: any)=>{
-      console.log(response);
+      console.log("llegue",response);
+      this._router.navigate(['/juego']);
     });
+
   }
 
 }
