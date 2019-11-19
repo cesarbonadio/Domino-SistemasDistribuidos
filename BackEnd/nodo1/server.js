@@ -155,14 +155,18 @@ app.get("/matches", urlencodedParser, (req, res) => {
 app.put("/matches/:id", urlencodedParser, (req,res) => {
   var id = req.params.id;
   var ids = [parseInt(id)];
-  var match = _.filter(json_matches.matches, function (match) {
-    return match.id === id;
+  currentMatch = _.filter(json_matches.matches, function (match) {
+    return match.id == id;
   })[0];
+
+  console.log(id)
+
+  console.log("hokaaa", currentMatch)
   //var match = matches.filter(x => x.id === id);
   let body = _.pick(req.body, ["player"]);
 
-  match.status = "Listos";
-  match.players.push(body.player)
+  currentMatch.status = "Listos";
+  currentMatch.players.push(body.player)
 
   for(let i = 0; i < portlist.length; i++){
     let options = {
@@ -170,7 +174,7 @@ app.put("/matches/:id", urlencodedParser, (req,res) => {
       uri: "http://" + portlist[i] + "/matches/"+id+"/join",
       resolveWithFullResponse: true,
       json: true,
-      body: match
+      body: currentMatch
     };
     rp(options)
       .then(response => {
@@ -194,8 +198,9 @@ app.post("/matches/:id/join", urlencodedParser, (req,res) => {
     return match.id != id;
   });
   console.log("partidas",json_matches)
+  console.log(body)
 
-  json_matches.matches.push(body[0])
+  json_matches.matches.push(body)
 
   var stringify = JSON.stringify(json_matches);
   fs.writeFile('recover.json', stringify, function (err) {
