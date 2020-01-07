@@ -41,7 +41,7 @@ export class CreateUserComponent implements OnInit {
   
   async createUserName() {
     await this._http
-    .post("http://localhost:10003/username", 
+    .post("http://localhost:10001/username", 
     {
       userName: this.registrationForm.get('userName').value
     })

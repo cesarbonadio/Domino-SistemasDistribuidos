@@ -80,6 +80,13 @@
                       *ngIf="getTurn(match) && match.status == 'Jugando'">
                       Jugar
                     </button>
+                    <button 
+                      type="button" 
+                      class="btn btn-success"
+                      (click)="getPiecesPlayed(match)" 
+                      *ngIf="match.status == 'Finalizado'">
+                      Detalle
+                    </button>
                   </td> 
                 </tr>
               </tbody>

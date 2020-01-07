@@ -14,7 +14,7 @@ const port = process.env.PORT;
 var nextplayer = process.env.NEXT;
 
 //arreglo de puertos
-var portlist = ["localhost:10001","localhost:10002","localhost:10003"];
+var portlist = ["192.168.1.103:10001","192.168.1.104:10002","192.168.1.105:10003"];
 
 var app = express();
 
@@ -110,22 +110,27 @@ app.post("/creatematch", urlencodedParser, (req,res) => {
     piecesPlayed: []
   }
 
-  for(let i = 0; i < portlist.length; i++){
-    let options = {
-      method: "POST",
-      uri: "http://" + portlist[i] + "/newmatch",
-      resolveWithFullResponse: true,
-      json: true,
-      body: match 
-    };
-    rp(options)
-      .then(response => {
-        console.log("Pasamos informacion de partida creada ");
-      })
-      .catch(e => {
-        console.log("Error pasando informacion de creacion de partida");
-      });  
+  try {
+    for(let i = 0; i < portlist.length; i++){
+      let options = {
+        method: "POST",
+        uri: "http://" + portlist[i] + "/newmatch",
+        resolveWithFullResponse: true,
+        json: true,
+        body: match 
+      };
+      rp(options)
+        .then(response => {
+          console.log("Pasamos informacion de partida creada ");
+        })
+        .catch(e => {
+          console.log("Error pasando informacion de creacion de partida");
+        });  
+    }
+  } catch (e){
+    print(e)
   }
+  
   res.json({ status: "success", message: "Se Creo la partida" });
 });
 
@@ -168,22 +173,27 @@ app.put("/matches/:id", urlencodedParser, (req,res) => {
   currentMatch.status = "Listos";
   currentMatch.players.push(body.player)
 
-  for(let i = 0; i < portlist.length; i++){
-    let options = {
-      method: "POST",
-      uri: "http://" + portlist[i] + "/matches/"+id+"/join",
-      resolveWithFullResponse: true,
-      json: true,
-      body: currentMatch
-    };
-    rp(options)
-      .then(response => {
-        console.log("Pasamos informacion de unio a partida");
-      })
-      .catch(e => {
-        console.log("Error pasando informacion de union a partida");
-      });  
+  try{
+    for(let i = 0; i < portlist.length; i++){
+      let options = {
+        method: "POST",
+        uri: "http://" + portlist[i] + "/matches/"+id+"/join",
+        resolveWithFullResponse: true,
+        json: true,
+        body: currentMatch
+      };
+      rp(options)
+        .then(response => {
+          console.log("Pasamos informacion de unio a partida");
+        })
+        .catch(e => {
+          console.log("Error pasando informacion de union a partida");
+        });  
+    }
+  }catch(e){
+    print(e)
   }
+  
   res.json({ status: "success", message: "Se esta uniendo a la partida" });
 });
 
@@ -238,21 +248,25 @@ app.post("/matches/:id/distribute", urlencodedParser, (req,res) => {
 
   var piecesPlayers = split(piecesCopy, n);
 
-  for(let i = 0; i < portlist.length; i++){
-    let options = {
-      method: "POST",
-      uri: "http://" + portlist[i] + "/matches/"+id+"/distributed",
-      resolveWithFullResponse: true,
-      json: true,
-      body: piecesPlayers
-    };
-    rp(options)
-      .then(response => {
-        console.log("Pasamos informacion de las piezas a partida");
-      })
-      .catch(e => {
-        console.log("Error pasando informacion de las piezas a partida");
-      });  
+  try{
+    for(let i = 0; i < portlist.length; i++){
+      let options = {
+        method: "POST",
+        uri: "http://" + portlist[i] + "/matches/"+id+"/distributed",
+        resolveWithFullResponse: true,
+        json: true,
+        body: piecesPlayers
+      };
+      rp(options)
+        .then(response => {
+          console.log("Pasamos informacion de las piezas a partida");
+        })
+        .catch(e => {
+          console.log("Error pasando informacion de las piezas a partida");
+        });  
+    }
+  }catch(e){
+    print(e)
   }
 
   res.json({ status: "success", message: "Se pasaron a las fichas a la partida" });
@@ -333,22 +347,27 @@ app.post("/matches/:id/playpiece", urlencodedParser, (req,res) => {
     matches[elementPos].status = "Finalizado";
   }
 
-  for(let i = 0; i < portlist.length; i++){
-    let options = {
-      method: "POST",
-      uri: "http://" + portlist[i] + "/matches/playedpiece",
-      resolveWithFullResponse: true,
-      json: true,
-      body: matches
-    };
-    rp(options)
-      .then(response => {
-        console.log("Pasamos informacion de la pieza jugada en la partida");
-      })
-      .catch(e => {
-        console.log("Error pasando informacion de la pieza jugada en la partida");
-      });  
+  try{
+    for(let i = 0; i < portlist.length; i++){
+      let options = {
+        method: "POST",
+        uri: "http://" + portlist[i] + "/matches/playedpiece",
+        resolveWithFullResponse: true,
+        json: true,
+        body: matches
+      };
+      rp(options)
+        .then(response => {
+          console.log("Pasamos informacion de la pieza jugada en la partida");
+        })
+        .catch(e => {
+          console.log("Error pasando informacion de la pieza jugada en la partida");
+        });  
+    }
+  }catch(e){
+    print(e)
   }
+  
   res.json({ status: "success", message: "Se enviaron las fichas jugadas en la partida" });
 });
 
